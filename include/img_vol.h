@@ -1,19 +1,19 @@
 #pragma once
 
 #include <string>
+#include <iostream>
+
+extern "C" {
 #include <image.h>
+}
 
 class ImgVol {
  public:
   enum class Axis {X, Y, Z};
 
-  ImgVol(size_t xsize, size_t ysize, size_t zsize) {
-    img_ = CreateImage(xsize, ysize, zsize);
-  }
+  ImgVol(size_t xsize, size_t ysize, size_t zsize);
 
-  ImgVol(std::string file_name) {
-    img_ = ReadImage(file_name.c_str());
-  }
+  ImgVol(std::string file_name);
 
   ImgVol(const ImgVol&) = delete;
 
@@ -23,13 +23,16 @@ class ImgVol {
 
   ImgVol& operator=(ImgVol&&) = delete;
 
-  ~ImgVol() {
-    DestroyImage(img_);
-  }
+  ~ImgVol();
 
-  Image* Img() {
-    return img_;
-  }
+  Image* Img();
+
+  bool ValidVoxel(Voxel v);
+
+  void WriteImg(std::string file_name);
+
+  friend std::ostream& operator<<(std::ostream& stream,
+                                  ImgVol& img);
 
  private:
   Image *img_;

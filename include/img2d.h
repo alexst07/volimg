@@ -5,12 +5,12 @@
 
 class Img2D {
   Img2D(int *data, size_t xsize, size_t ysize)
-  : xsize_(xsize), ysize_(ysize), pixels_(data, xsize*ysize) {}
+  : xsize_(xsize), ysize_(ysize), pixels_(xsize*ysize, *data) {}
 
   Img2D(const Img2D& img)
   : xsize_(img.xsize_), ysize_(img.ysize_), pixels_(img.pixels_) {}
 
-  Img2D4(Img2D&& img)
+  Img2D(Img2D&& img)
   : xsize_(img.xsize_), ysize_(img.ysize_), pixels_(std::move(img.pixels_)) {
     img.xsize_ = 0;
     img.ysize_ = 0;
