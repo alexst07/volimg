@@ -27,7 +27,17 @@ class ImgVol {
 
   Image* Img();
 
-  bool ValidVoxel(Voxel v);
+  int operator()(size_t x, size_t y, size_t z) const;
+
+  int VoxelIntensity(size_t x, size_t y, size_t z) const;
+
+  bool ValidVoxel(Voxel v) const noexcept;
+
+  size_t SizeX() const noexcept;
+
+  size_t SizeY() const noexcept;
+
+  size_t SizeZ() const noexcept;
 
   void WriteImg(std::string file_name);
 
