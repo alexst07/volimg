@@ -1,12 +1,30 @@
 #include "operations.h"
 
-Img2D Cut(const ImgVol& img_vol, ImgVol::Axis axis, size_t pos, int graus) {
+Img2D Cut(const ImgVol& img_vol, ImgVol::Axis axis, size_t pos) {
+  size_t s1, s2;
 
-  Img2D img2d(img_vol.SizeX(), img_vol.SizeY());
+  if (axis == ImgVol::Axis::Z) {
+    s1 = img_vol.SizeX();
+    s2 = img_vol.SizeY();
+  } else if (axis == ImgVol::Axis::X) {
+    s1 = img_vol.SizeZ();
+    s2 = img_vol.SizeY();
+  } else {
+    s1 = img_vol.SizeZ();
+    s2 = img_vol.SizeX();
+  }
 
-  for (int i = 0; i < img_vol.SizeX(); i++) {
-    for (int j = 0; j < img_vol.SizeY(); j++) {
-      img2d(img_vol(i, j, pos), i, j);
+  Img2D img2d(s1, s2);
+
+  for (int i = 0; i < s1; i++) {
+    for (int j = 0; j < s2; j++) {
+      if (axis == ImgVol::Axis::Z) {
+        img2d(img_vol(i, j, pos), i, j);
+      } else if (axis == ImgVol::Axis::X) {
+        img2d(img_vol(pos, j, i), i, j);
+      } else {
+        img2d(img_vol(j, pos, i), i, j);
+      }
     }
   }
 
