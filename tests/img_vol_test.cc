@@ -9,7 +9,15 @@ int main(int argc, char **argv) {
 
   std::cout << img(57, 9, 35) << "\n";
 
-  Img2D img2d = Cut(img, ImgVol::Axis::Z, 40);
+  Img2D img2dz = Cut(img, ImgVol::Axis::Z, 40);
 
-  std::cout << img2d;
+  std::cout << img2dz << "\n";
+
+  Img2D img2dy = Cut(img, ImgVol::Axis::Y, 40);
+
+  std::cout << img2dy << "\n";
+
+  Img2D img2dx = Cut(img, ImgVol::Axis::X, 40);
+
+  std::cout << img2dx << "\n";
 }
