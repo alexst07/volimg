@@ -1,5 +1,72 @@
 #include "img_vol.h"
 
+ImgGray::ImgGray(size_t xsize, size_t ysize) {
+  img_ = CreateGrayImage(xsize, ysize);
+}
+
+ImgGray::ImgGray(int* data, size_t xsize, size_t ysize) {
+  img_ = CreateGrayImage(xsize, ysize);
+
+  for (int i = 0; i < xsize; i++) {
+    for (int j = 0; j < ysize; i++) {
+      img_->val[i][j] = data[i*xsize + ysize];
+    }
+  }
+}
+
+ImgGray::ImgGray(ImgGray&& img) {
+  Move(std::move(img));
+}
+
+ImgGray::ImgGray(const ImgGray& img) {
+  Copy(img);
+}
+
+ImgGray& ImgGray::operator=(ImgGray&& img) {
+  Move(std::move(img));
+  return *this;
+}
+
+ImgGray& ImgGray::operator=(const ImgGray& img) {
+  Copy(img);
+  return *this;
+}
+
+void ImgGray::Copy(const ImgGray& img) {
+  img_->dx = img.img_->dx;
+  img_->dy = img.img_->dy;
+  img_->nx = img.img_->nx;
+  img_->ny = img.img_->ny;
+  memcpy(img_->unid, img.img_->unid, 10);
+
+  memcpy(img_->val, img.img_->val, img_->nx);
+
+  for (int i = 0; i < img_->nx; i++) {
+    memcpy(img_->val[i], img.img_->val[i], img_->ny);
+  }
+}
+
+void ImgGray::Move(ImgGray&& img) {
+  img_->dx = img.img_->dx;
+  img_->dy = img.img_->dy;
+  img_->nx = img.img_->nx;
+  img_->ny = img.img_->ny;
+  memcpy(img_->unid, img.img_->unid, 10);
+  img_->val = img.img_->val;
+
+  img.img_->dx = 0;
+  img.img_->dy = 0;
+  img.img_->nx = 0;
+  img.img_->ny = 0;
+  img.img_->val = nullptr;
+}
+
+void ImgGray::operator()(int v, size_t x, size_t y) {
+
+}
+
+/////////////////////////////////////////////////////////////////////////
+
 ImgVol::ImgVol(size_t xsize, size_t ysize, size_t zsize) {
   img_ = CreateMedicalImage(xsize, ysize, zsize);
 }

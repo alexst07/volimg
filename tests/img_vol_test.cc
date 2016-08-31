@@ -4,7 +4,7 @@
 #include "img2d.h"
 
 int main(int argc, char **argv) {
-  ImgVol img("/home/alex/Downloads/libmo815-3dvis/data/brain.scn");
+  ImgVol img("/home/alex/Downloads/libmc920/data/brain.scn");
   std::cout << img << "\n";
 
   std::cout << img(57, 9, 35) << "\n";

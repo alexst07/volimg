@@ -7,6 +7,38 @@ extern "C" {
 #include <mc920.h>
 }
 
+class ImgGray {
+ public:
+  ImgGray(size_t xsize, size_t ysize);
+
+  ImgGray(int* data, size_t xsize, size_t ysize);
+
+  ImgGray(const ImgGray&);
+
+  ImgGray(ImgGray&&);
+
+  ImgGray& operator=(const ImgGray&);
+
+  ImgGray& operator=(ImgGray&&);
+
+  ~ImgGray();
+
+  int operator()(size_t x, size_t y) const;
+
+  void operator()(int v, size_t x, size_t y);
+
+  size_t SizeX() const noexcept;
+
+  size_t SizeY() const noexcept;
+
+  void WriteImg(std::string file_name);
+
+ private:
+  void Copy(const ImgGray&);
+  void Move(ImgGray&&);
+  GrayImage *img_;
+};
+
 class ImgVol {
  public:
   enum class Axis {X, Y, Z};
