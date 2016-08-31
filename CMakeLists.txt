@@ -18,6 +18,6 @@ file(GLOB LIB_SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cc)
 
 add_library(volimg SHARED ${LIB_SRC_FILES})
 
-target_link_libraries (volimg LINK_PUBLIC ${BASE_IMG_LIB}/lib/libmo815-3dvis.a)
+target_link_libraries (volimg LINK_PUBLIC ${BASE_IMG_LIB}/lib/libmc920.a)
 
 add_subdirectory(tests/)

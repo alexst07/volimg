@@ -4,7 +4,7 @@
 #include <iostream>
 
 extern "C" {
-#include <image.h>
+#include <mc920.h>
 }
 
 class ImgVol {
@@ -25,13 +25,11 @@ class ImgVol {
 
   ~ImgVol();
 
-  Image* Img();
+  MedicalImage* Img();
 
   int operator()(size_t x, size_t y, size_t z) const;
 
   int VoxelIntensity(size_t x, size_t y, size_t z) const;
-
-  bool ValidVoxel(Voxel v) const noexcept;
 
   size_t SizeX() const noexcept;
 
@@ -45,5 +43,5 @@ class ImgVol {
                                   ImgVol& img);
 
  private:
-  Image *img_;
+  MedicalImage *img_;
 };

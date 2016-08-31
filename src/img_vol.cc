@@ -1,32 +1,27 @@
 #include "img_vol.h"
 
 ImgVol::ImgVol(size_t xsize, size_t ysize, size_t zsize) {
-  img_ = CreateImage(xsize, ysize, zsize);
+  img_ = CreateMedicalImage(xsize, ysize, zsize);
 }
 
 ImgVol::ImgVol(std::string file_name) {
-  img_ = ReadImage(const_cast<char*>(file_name.c_str()));
+  img_ = ReadMedicalImage(const_cast<char*>(file_name.c_str()));
 }
 
 ImgVol::~ImgVol() {
-  DestroyImage(img_);
+  DestroyMedicalImage(&img_);
 }
 
-Image* ImgVol::Img() {
+MedicalImage* ImgVol::Img() {
   return img_;
 }
 
-bool ImgVol::ValidVoxel(Voxel v) const noexcept {
-  return ::ValidVoxel(img_, v);
-}
-
 void ImgVol::WriteImg(std::string file_name) {
-  WriteImage(img_, const_cast<char*>(file_name.c_str()));
+  WriteMedicalImage(img_, const_cast<char*>(file_name.c_str()));
 }
 
 int ImgVol::VoxelIntensity(size_t x, size_t y, size_t z) const {
-  size_t pos = x + y*img_->xsize + z*img_->xsize*img_->ysize;
-  return img_->val[pos];
+  return img_->val[x][y][z];
 }
 
 int ImgVol::operator()(size_t x, size_t y, size_t z) const{
@@ -34,20 +29,20 @@ int ImgVol::operator()(size_t x, size_t y, size_t z) const{
 }
 
 size_t ImgVol::SizeX() const noexcept {
-  return img_->xsize;
+  return img_->nx;
 }
 
 size_t ImgVol::SizeY() const noexcept {
-  return img_->ysize;
+  return img_->ny;
 }
 
 size_t ImgVol::SizeZ() const noexcept {
-  return img_->zsize;
+  return img_->nz;
 }
 
 std::ostream& operator<<(std::ostream& stream,
                          ImgVol& img) {
-  stream << "Img sizes[X: "<< img.Img()->xsize << ", Y: " << img.Img()->ysize
-  << ", Z: " << img.Img()->zsize << "]";
+  stream << "Img sizes[X: "<< img.Img()->nx << ", Y: " << img.Img()->ny
+  << ", Z: " << img.Img()->nz << "]";
   return stream;
 }
