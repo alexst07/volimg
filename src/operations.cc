@@ -1,5 +1,7 @@
 #include "operations.h"
 
+namespace imgvol {
+
 Img2D Cut(const ImgVol& img_vol, ImgVol::Axis axis, size_t pos) {
   size_t s1, s2;
 
@@ -29,4 +31,6 @@ Img2D Cut(const ImgVol& img_vol, ImgVol::Axis axis, size_t pos) {
   }
 
   return img2d;
+}
+
 }

@@ -7,11 +7,13 @@ extern "C" {
 #include <mc920.h>
 }
 
+namespace imgvol {
+
 class ImgGray {
  public:
   ImgGray(size_t xsize, size_t ysize);
 
-  ImgGray(int* data, size_t xsize, size_t ysize);
+  ImgGray(const int* data, size_t xsize, size_t ysize);
 
   ImgGray(const ImgGray&);
 
@@ -31,7 +33,7 @@ class ImgGray {
 
   size_t SizeY() const noexcept;
 
-  void WriteImg(std::string file_name);
+  void WriteImg(const std::string& file_name);
 
  private:
   void Copy(const ImgGray&);
@@ -77,3 +79,5 @@ class ImgVol {
  private:
   MedicalImage *img_;
 };
+
+}

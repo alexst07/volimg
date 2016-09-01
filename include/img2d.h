@@ -3,6 +3,8 @@
 #include <vector>
 #include <memory>
 
+namespace imgvol {
+
 class Img2D {
  public:
   Img2D(int *data, size_t xsize, size_t ysize)
@@ -55,6 +57,10 @@ class Img2D {
     return ysize_;
   }
 
+  const int* Data() const noexcept {
+    return pixels_.data();
+  }
+
   friend std::ostream& operator<<(std::ostream& stream,
                                   Img2D& img);
 
@@ -69,4 +75,6 @@ std::ostream& operator<<(std::ostream& stream,
   stream << "Img sizes[X: "<< img.SizeX() << ", Y: " << img.SizeY()
   << "]";
   return stream;
+}
+
 }
