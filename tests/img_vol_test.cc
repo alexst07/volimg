@@ -21,6 +21,6 @@ int main(int argc, char **argv) {
 
   std::cout << img2dx << "\n";
 
-  imgvol::ImgGray imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
+  imgvol::ImgVet imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
   imggray.WriteImg("test");
 }

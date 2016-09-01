@@ -9,6 +9,38 @@ extern "C" {
 
 namespace imgvol {
 
+class ImgVet {
+ public:
+  ImgVet(size_t xsize, size_t ysize);
+
+  ImgVet(const int* data, size_t xsize, size_t ysize);
+
+  ImgVet(const ImgVet&);
+
+  ImgVet(ImgVet&&);
+
+  ImgVet& operator=(const ImgVet&);
+
+  ImgVet& operator=(ImgVet&&);
+
+  ~ImgVet();
+
+  int operator()(size_t x, size_t y) const;
+
+  void operator()(int v, size_t x, size_t y);
+
+  size_t SizeX() const noexcept;
+
+  size_t SizeY() const noexcept;
+
+  void WriteImg(const std::string& file_name);
+
+ private:
+  void Copy(const ImgVet&);
+  void Move(ImgVet&&);
+  Image *img_;
+};
+
 class ImgGray {
  public:
   ImgGray(size_t xsize, size_t ysize);
