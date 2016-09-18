@@ -5,11 +5,13 @@
 
 int main(int argc, char **argv) {
   imgvol::ImgVol img("/home/alex/Downloads/libmc920/data/brain.scn");
+  imgvol::ImgVol img_label("/home/alex/Downloads/libmc920/data/brain_label.scn");
   std::cout << img << "\n";
 
   std::cout << img(57, 9, 35) << "\n";
 
-  imgvol::Img2D img2dz = imgvol::Cut(img, imgvol::ImgVol::Axis::Z, 60);
+  imgvol::Img2D img2dz = imgvol::Cut(img, imgvol::ImgVol::Axis::Z, 100);
+  imgvol::Img2D img2dz_label = imgvol::Cut(img_label, imgvol::ImgVol::Axis::Z, 100);
 
   std::cout << img2dz << "\n";
 
@@ -23,4 +25,16 @@ int main(int argc, char **argv) {
 
   imgvol::ImgVet imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
   imggray.WriteImg("test");
+
+//   BrightinessContrast(img2dz, 12, 70, 80);
+//   Normalize(img2dz, 12);
+  //   Negative(img2dz);
+
+  imgvol::ImgColor img_color = imgvol::ColorLabels(img2dz, img2dz_label, 16);
+  img_color.WriteImg("color_test");
+  imgvol::ImgVet imggray2(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
+  imggray2.WriteImg("bri_contrast");
+
+  imgvol::ImgVet imggray_label(img2dz_label.Data(), img2dz_label.SizeX(), img2dz_label.SizeY());
+  imggray_label.WriteImg("mask");
 }

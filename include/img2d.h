@@ -57,8 +57,20 @@ class Img2D {
     return ysize_;
   }
 
+  size_t NumPixels() const noexcept {
+    return pixels_.size();
+  }
+
   const int* Data() const noexcept {
     return pixels_.data();
+  }
+
+  int& operator[](size_t i) {
+    return pixels_[i];
+  }
+
+  const int& operator[](size_t i) const {
+    return pixels_[i];
   }
 
   friend std::ostream& operator<<(std::ostream& stream,

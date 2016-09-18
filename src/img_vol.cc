@@ -2,6 +2,94 @@
 
 namespace imgvol {
 
+ImgColor::ImgColor(size_t xsize, size_t ysize) {
+  img_ = CreateColorImage(xsize, ysize);
+}
+
+ImgColor::~ImgColor() {
+  if (img_ == nullptr)
+    return;
+
+//   DestroyColorImage(&img_);
+}
+
+ImgColor::ImgColor(ImgColor&& img) {
+  Move(std::move(img));
+}
+
+ImgColor::ImgColor(const ImgColor& img) {
+  Copy(img);
+}
+
+ImgColor& ImgColor::operator=(ImgColor&& img) {
+  Move(std::move(img));
+  return *this;
+}
+
+ImgColor& ImgColor::operator=(const ImgColor& img) {
+  Copy(img);
+  return *this;
+}
+
+void ImgColor::Copy(const ImgColor& img) {
+  img_->nx = img.img_->nx;
+  img_->ny = img.img_->ny;
+
+  memcpy(img_->cor, img.img_->cor, sizeof(Cor)*img_->ny);
+
+  for (int i = 0; i < img_->ny; i++) {
+    memcpy(img_->cor[i], img.img_->cor[i], sizeof(Cor)*img_->nx);
+  }
+}
+
+void ImgColor::Move(ImgColor&& img) {
+  img_->nx = img.img_->nx;
+  img_->ny = img.img_->ny;
+
+  img_->cor = img.img_->cor;
+
+  img.img_->cor = nullptr;
+  img.img_->nx = 0;
+  img.img_->ny = 0;
+  DestroyColorImage(&img.img_);
+  img.img_ = nullptr;
+}
+
+void ImgColor::operator()(std::array<int, 3> v, size_t x, size_t y) {
+  img_->cor[y][x].val[0] = v[0];
+  img_->cor[y][x].val[1] = v[1];
+  img_->cor[y][x].val[2] = v[2];
+}
+
+std::array<int, 3> ImgColor::operator()(size_t x, size_t y) const {
+  std::array<int, 3> a;
+  a[0] = img_->cor[y][x].val[0];
+  a[1] = img_->cor[y][x].val[1];
+  a[2] = img_->cor[y][x].val[2];
+  return a;
+}
+
+void ImgColor::operator()(std::array<int, 3> v, size_t i) {
+  size_t x = i/img_->nx;
+  size_t y = i%img_->nx;
+
+  this->operator()(v, y, x);
+}
+
+void ImgColor::WriteImg(const std::string& file_name) {
+  WriteColorImage(img_, const_cast<char*>(file_name.c_str()));
+}
+
+size_t ImgColor::SizeX() const noexcept {
+  return img_->nx;
+}
+
+size_t ImgColor::SizeY() const noexcept {
+  return img_->ny;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
 ImgVet::ImgVet(size_t xsize, size_t ysize) {
   img_ = CreateImage(xsize, ysize);
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <array>
 #include <iostream>
 
 extern "C" {
@@ -8,6 +9,40 @@ extern "C" {
 }
 
 namespace imgvol {
+
+class ImgColor {
+ public:
+  ImgColor() = delete;
+
+  ImgColor(size_t xsize, size_t ysize);
+
+  ImgColor(const ImgColor&);
+
+  ImgColor(ImgColor&&);
+
+  ImgColor& operator=(const ImgColor&);
+
+  ImgColor& operator=(ImgColor&&);
+
+  ~ImgColor();
+
+  std::array<int, 3> operator()(size_t x, size_t y) const;
+
+  void operator()(std::array<int, 3> v, size_t x, size_t y);
+
+  void operator()(std::array<int, 3> v, size_t i);
+
+  size_t SizeX() const noexcept;
+
+  size_t SizeY() const noexcept;
+
+  void WriteImg(const std::string& file_name);
+
+ private:
+  void Copy(const ImgColor&);
+  void Move(ImgColor&&);
+  ColorImage *img_;
+};
 
 class ImgVet {
  public:
