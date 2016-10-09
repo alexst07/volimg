@@ -15,4 +15,6 @@ void Negative(Img2D& img);
 
 ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits);
 
+ImgGray DrawWireframe(const ImgVol& img_vol, std::array<float, 3> rad);
+
 }

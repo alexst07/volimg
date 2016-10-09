@@ -282,6 +282,10 @@ int ImgVol::VoxelIntensity(size_t x, size_t y, size_t z) const {
   return img_->val[z][y][x];
 }
 
+void ImgVol::SetVoxelIntensity(float b, size_t x, size_t y, size_t z) {
+  img_->val[z][y][x] = b;
+}
+
 int ImgVol::operator()(size_t x, size_t y, size_t z) const{
   return VoxelIntensity(x, y, z);
 }

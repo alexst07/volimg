@@ -132,6 +132,8 @@ class ImgVol {
 
   int VoxelIntensity(size_t x, size_t y, size_t z) const;
 
+  void SetVoxelIntensity(float b, size_t x, size_t y, size_t z);
+
   size_t SizeX() const noexcept;
 
   size_t SizeY() const noexcept;
