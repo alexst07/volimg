@@ -118,11 +118,17 @@ class ImgVol {
 
   ImgVol(const ImgVol&) = delete;
 
-  ImgVol(ImgVol&&) = delete;
+  ImgVol(ImgVol&& img) {
+    img_ = img.img_;
+    img.img_ = nullptr;
+  }
 
   ImgVol& operator=(const ImgVol&) = delete;
 
-  ImgVol& operator=(ImgVol&&) = delete;
+  ImgVol& operator=(ImgVol&& img) {
+    img_ = img.img_;
+    img.img_ = nullptr;
+  }
 
   ~ImgVol();
 
@@ -139,6 +145,12 @@ class ImgVol {
   size_t SizeY() const noexcept;
 
   size_t SizeZ() const noexcept;
+
+  float DimX() const noexcept;
+
+  float DimY() const noexcept;
+
+  float DimZ() const noexcept;
 
   void WriteImg(std::string file_name);
 

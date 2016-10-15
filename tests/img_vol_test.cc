@@ -8,6 +8,11 @@ int main(int argc, char **argv) {
   imgvol::ImgVol img_label("/home/alex/Downloads/libmc920/data/brain_label.scn");
   std::cout << img << "\n";
 
+  imgvol::ImgVol imgout = Refactor(img, 0.5, 0.5, 0.5);
+  imgvol::Img2D img2dz = imgvol::Cut(imgout, imgvol::ImgVol::Axis::Z, 100);
+  imgvol::ImgVet imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
+  imggray.WriteImg("test");
+
 //   std::cout << img(57, 9, 35) << "\n";
 //
 //   imgvol::Img2D img2dz = imgvol::Cut(img, imgvol::ImgVol::Axis::Z, 100);
@@ -38,7 +43,7 @@ int main(int argc, char **argv) {
 //   imgvol::ImgVet imggray_label(img2dz_label.Data(), img2dz_label.SizeX(), img2dz_label.SizeY());
 //   imggray_label.WriteImg("mask");
 
-  imgvol::ImgGray cube = imgvol::DrawWireframe(img, std::array<float, 3> {M_PI/180*45, M_PI/180*45, 0});
+//   imgvol::ImgGray cube = imgvol::DrawWireframe(img, std::array<float, 3> {M_PI/180*0, M_PI/180*45, 0});
 //   imgvol::ImgGray cube = imgvol::DrawWireframe(img, std::array<float, 3> {0, 0, 0});
-  cube.WriteImg("cube");
+//   cube.WriteImg("cube");
 }

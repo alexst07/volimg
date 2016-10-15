@@ -386,36 +386,78 @@ ImgGray DrawWireframe(const ImgVol& img_vol, std::array<float, 3> rad) {
   return res_img;
 }
 
-// ImgGray DrawWireframe(const ImgVol& img_vol, std::array<float, 3> rad) {
-//   std::array<float, 3> size;
-//   size[0] = img_vol.SizeX;
-//   size[1] = img_vol.SizeY;
-//   size[2] = img_vol.SizeZ;
-//
-//   std::array<float, 3> dist_center = {-size[0]/2, -size[1]/2, -size[2]/2};
-//
-//   float diagonal = Diagonal(size);
-//
-//   // Conferir o -diagonal/2
-//   std::array<float, 3> dist_diagonal = {diagonal/2, diagonal/2, -diagonal/2};
-//
-//   ImgVol res_img(diagonal, diagonal, diagonal);
-//
-//
-//   for (int x = 0; x < size[0]; x++) {
-//      for (int y = 0; y < size[1]; y++) {
-//         for (int z = 0; z < size[2]; z++) {
-//           std::array<float, 3> point = {x, y, z};
-//           std::array<float, 3> fp = Translate(point, dist_center);
-//           fp = RotateX(fp, rad[0]);
-//           fp = RotateY(fp, rad[1]);
-//           fp = RotateZ(fp, rad[2]);
-//           fp = Translate(fp, dist_diagonal);
-//           float b = img_vol(x, y, z);
-//           res_img.SetVoxelIntensity(b, fp[0], fp[1], fp[2]);
-//         }
-//     }
-//   }
-// }
+ImgVol Refactor(const ImgVol& img_vol, float dx2, float dy2, float dz2) {
+  size_t nx2, ny2, nz2;
+  size_t nx1 = img_vol.SizeX(), ny1 = img_vol.SizeY(), nz1 = img_vol.SizeZ();
+  float dx1 = img_vol.DimX(), dy1 = img_vol.DimY(), dz1 = img_vol.DimZ();
+
+  nx2 = nx1*dx1/dx2;
+  ny2 = ny1*dy1/dy2;
+  nz2 = nz1*dz1/dz2;
+
+  ImgVol img_out(nx2, ny2, nz2);
+
+  for (size_t zp = 0; zp < nz1; zp++) {
+    for (size_t yp = 0; yp < ny1; yp++) {
+      int nxp = 0;
+      float xp1 = dx1/2;
+      float xp2 = xp1 + dx1;
+
+      // check the end of loop
+      for (float xp = xp1 + dx2; xp < nx1*dx1; xp += dx2) {
+        xp1 = xp - dx2;
+        xp2 = xp1 + dx1;
+        int ixp1 = (int) xp1;
+        int ixp2 = (int) xp2;
+        float ip = (xp - xp1)*img_vol.VoxelIntensity(ixp2, yp, zp) +
+                   (xp2 - xp)*img_vol.VoxelIntensity(ixp1, yp, zp);
+        img_out.SetVoxelIntensity(ip, nxp, yp, zp);
+        nxp++;
+      }
+    }
+  }
+
+  for (size_t zp = 0; zp < nz1; zp++) {
+    for (size_t xp = 0; xp < nx1; xp++) {
+      int nyp = 0;
+      float yp1 = dy1/2;
+      float yp2 = yp1 + dy1;
+
+      // check the end of loop
+      for (float yp = yp1 + dy2; yp < ny1*dy1; yp += dy2) {
+        yp1 = yp - dy2;
+        yp2 = yp1 + dy1;
+        int iyp1 = (int) yp1;
+        int iyp2 = (int) yp2;
+        float ip = (yp - yp1)*img_vol.VoxelIntensity(xp, iyp1, zp) +
+                   (yp2 - yp)*img_vol.VoxelIntensity(xp, iyp2, zp);
+        img_out.SetVoxelIntensity(ip, xp, nyp, zp);
+        nyp++;
+      }
+    }
+  }
+
+  for (size_t xp = 0; xp < nx1; xp++) {
+    for (size_t yp = 0; yp < ny1; yp++) {
+      int nzp = 0;
+      float zp1 = dz1/2;
+      float zp2 = zp1 + dz1;
+
+      // check the end of loop
+      for (float zp = zp1 + dz2; zp < nz1*dz1; zp += dz2) {
+        zp1 = zp - dz2;
+        zp2 = zp1 + dz1;
+        int izp1 = (int) zp1;
+        int izp2 = (int) zp2;
+        float ip = (zp - zp1)*img_vol.VoxelIntensity(xp, yp, izp2) +
+                   (zp2 - zp)*img_vol.VoxelIntensity(xp, yp, izp1);
+        img_out.SetVoxelIntensity(ip, xp, yp, nzp);
+        nzp++;
+      }
+    }
+  }
+
+  return img_out;
+}
 
 }

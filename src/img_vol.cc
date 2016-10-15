@@ -302,6 +302,18 @@ size_t ImgVol::SizeZ() const noexcept {
   return img_->nz;
 }
 
+float ImgVol::DimX() const noexcept {
+  return  img_->dx;
+}
+
+float ImgVol::DimY() const noexcept {
+  return  img_->dy;
+}
+
+float ImgVol::DimZ() const noexcept {
+  return  img_->dz;
+}
+
 std::ostream& operator<<(std::ostream& stream,
                          ImgVol& img) {
   stream << "Img sizes[X: "<< img.Img()->nx << ", Y: " << img.Img()->ny
