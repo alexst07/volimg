@@ -209,7 +209,6 @@ float DotProduct(std::array<float, 3> vec) {
   float res = ref[0]*vec[0];
   res += ref[1]*vec[1];
   res += ref[2]*vec[2];
-  res += 1;
 
   return res;
 }
@@ -227,9 +226,9 @@ bool TestVisibleFace(std::array<float, 3> face, std::array<float, 3> rad) {
   float dot_prod = DotProduct(fp);
 
   if (dot_prod > 0)
-    return false;
+    return true;
 
-  return true;
+  return false;
 }
 
 std::array<bool, 6> VisibleFaces(std::array<float, 3> rad) {
@@ -349,21 +348,21 @@ ImgGray DrawWireframe(const ImgVol& img_vol, std::array<float, 3> rad) {
     DrawLine(vertex[2], vertex[3], res_img);
   }
 
-  if (faces[2]) {
+  if (faces[3]) {
     DrawLine(vertex[0], vertex[1], res_img);
     DrawLine(vertex[0], vertex[4], res_img);
     DrawLine(vertex[1], vertex[5], res_img);
     DrawLine(vertex[4], vertex[5], res_img);
   }
 
-  if (faces[1]) {
+  if (faces[0]) {
     DrawLine(vertex[1], vertex[5], res_img);
     DrawLine(vertex[1], vertex[3], res_img);
     DrawLine(vertex[3], vertex[7], res_img);
     DrawLine(vertex[5], vertex[7], res_img);
   }
 
-  if (faces[3]) {
+  if (faces[1]) {
     DrawLine(vertex[0], vertex[4], res_img);
     DrawLine(vertex[0], vertex[2], res_img);
     DrawLine(vertex[4], vertex[6], res_img);
@@ -377,7 +376,7 @@ ImgGray DrawWireframe(const ImgVol& img_vol, std::array<float, 3> rad) {
     DrawLine(vertex[6], vertex[7], res_img);
   }
 
-  if (faces[0]) {
+  if (faces[2]) {
     DrawLine(vertex[2], vertex[3], res_img);
     DrawLine(vertex[2], vertex[6], res_img);
     DrawLine(vertex[6], vertex[7], res_img);
