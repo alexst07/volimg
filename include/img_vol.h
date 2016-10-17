@@ -118,6 +118,10 @@ class ImgVol {
 
   ImgVol(std::string file_name);
 
+  ImgVol(MedicalImage* img) {
+    img_ = img;
+  }
+
   ImgVol(const ImgVol&) = delete;
 
   ImgVol(ImgVol&& img) {

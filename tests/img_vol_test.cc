@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
   imgvol::ImgVol img_label("/home/alex/Downloads/libmc920/data/brain_label.scn");
   std::cout << img << "\n";
 
-  imgvol::ImgVol imgout = Refactor(img, 0.5, 0.5, 0.5);
+  imgvol::ImgVol imgout = Interp(img, 2, 2, 2);
   imgvol::Img2D img2dz = imgvol::Cut(imgout, imgvol::ImgVol::Axis::aZ, 100);
   imgvol::ImgVet imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
   imggray.WriteImg("test");

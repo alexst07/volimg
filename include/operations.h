@@ -17,6 +17,8 @@ ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits);
 
 ImgGray DrawWireframe(const ImgVol& img_vol, std::array<float, 3> rad);
 
+ImgVol Interp(ImgVol& img_vol, float sx, float sy, float sz);
+
 ImgVol Refactor(const ImgVol& img_vol, float dx2, float dy2, float dz2);
 
 }
