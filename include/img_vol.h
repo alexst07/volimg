@@ -110,7 +110,9 @@ class ImgGray {
 
 class ImgVol {
  public:
-  enum class Axis {X, Y, Z};
+  enum class Axis {
+        aX, aY, aZ
+    };
 
   ImgVol(size_t xsize, size_t ysize, size_t zsize);
 
