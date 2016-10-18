@@ -21,4 +21,6 @@ ImgVol Interp(ImgVol& img_vol, float sx, float sy, float sz);
 
 ImgVol Refactor(const ImgVol& img_vol, float dx2, float dy2, float dz2);
 
+float Diagonal(std::array<float, 3> size);
+
 }
