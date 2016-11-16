@@ -19,8 +19,12 @@ ImgGray DrawWireframe(const ImgVol& img_vol, std::array<float, 3> rad);
 
 ImgVol Interp(ImgVol& img_vol, float sx, float sy, float sz);
 
+float Sign(float v);
+
 ImgVol Refactor(const ImgVol& img_vol, float dx2, float dy2, float dz2);
 
 float Diagonal(std::array<float, 3> size);
+
+ImgGray CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> vec);
 
 }

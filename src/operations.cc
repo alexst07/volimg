@@ -167,18 +167,56 @@ ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits) {
   return img_color;
 }
 
-ImgVol CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> vec) {
+void PrintMatrix(Matrix *m) {
+  for (int i = 0; i < m->nrows; i++) {
+    for (int j = 0; j < m->ncols; j++){
+      std::cout << m->val[j+i*m->ncols] << " ";
+    }
+
+    std::cout << '\n';
+  }
+}
+
+std::array<float, 3> VecNorm(std::array<float, 3> v) {
+  float r = sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+  std::array<float, 3> vr = {v[0]/r, v[1]/r, v[2]/r};
+  return vr;
+}
+
+ImgGray CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> vec) {
+  vec = VecNorm(vec);
   // Handle vec[2] = 0
   float alpha_x = atan(vec[1]/ vec[2]);
+  float diagonal = Diagonal(std::array<float, 3>{img.SizeX(), img.SizeY(), img.SizeZ()});
 
   if (vec[2] < 0) {
-    alpha_x += M_PI;
+    alpha_x -= M_PI;
   }
 
   float vzl = vec[2]/cos(alpha_x);
-  std::array<float, 3> qc = {img.SizeX()/2, img.SizeY()/2, img.SizeZ()/2};
+  std::array<float, 3> qc = {diagonal/2, diagonal/2, -diagonal/2};
 
   float alpha_y = atan(vec[0]/ vzl);
+
+  if (vec[2] == 0) {
+    if ((vec[1] != 0) && (vec[0] == 0)) {
+      alpha_y = 0;
+      alpha_x = M_PI/2*Sign(vec[1]);
+    }
+
+    if ((vec[0] != 0) && (vec[1] == 0)) {
+      alpha_y = M_PI/2*Sign(vec[0]);
+      alpha_x = 0;
+    }
+
+//     if ((vec[0] != 0) && (vec[1] != 0)) {
+//       alpha_y
+//     }
+  }
+
+  std::cout << "alpha_x: " << alpha_x << "\n";
+  std::cout << "alpha_y: " << alpha_y << "\n";
+
   Matrix *t_mqc = CreateMatrix(4, 4);
   t_mqc->val[0] = 1;
   t_mqc->val[1] = 0;
@@ -197,18 +235,19 @@ ImgVol CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> ve
   t_mqc->val[14] = 0;
   t_mqc->val[15] = 1;
 
+  alpha_x = -alpha_x;
   Matrix *rotx = CreateMatrix(4, 4);
   rotx->val[0] = 1;
   rotx->val[1] = 0;
   rotx->val[2] = 0;
   rotx->val[3] = 0;
   rotx->val[4] = 0;
-  rotx->val[5] = cos(-alpha_x);
-  rotx->val[6] = -sin(-alpha_x);
+  rotx->val[5] = cos(alpha_x);
+  rotx->val[6] = -sin(alpha_x);
   rotx->val[7] = 0;
   rotx->val[8] = 0;
-  rotx->val[9] = sin(-alpha_x);
-  rotx->val[10] = cos(-alpha_x);
+  rotx->val[9] = sin(alpha_x);
+  rotx->val[10] = cos(alpha_x);
   rotx->val[11] = 0;
   rotx->val[12] = 0;
   rotx->val[13] = 0;
@@ -251,14 +290,14 @@ ImgVol CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> ve
   t_p1->val[14] = 0;
   t_p1->val[15] = 1;
 
-  Matrix *tmp_rx_tqc = MultMatrices(rotx, t_mqc);
-  Matrix* tmp_ry_rx_tqc = MultMatrices(roty, tmp_rx_tqc);
+  Matrix *tmp_rx_tqc = MultMatrices(roty, t_mqc);
+  Matrix* tmp_ry_rx_tqc = MultMatrices(rotx, tmp_rx_tqc);
   Matrix *phi_inv = MultMatrices(t_p1, tmp_ry_rx_tqc);
 
-  float diagonal = Diagonal(std::array<float, 3>{img.SizeX(), img.SizeY(), img.SizeZ()});
-
   ImgGray img_out(diagonal, diagonal);
-  Matrix *q = CreateMatrix(4, 1);
+  Matrix *q = CreateMatrix(1, 4);
+
+  PrintMatrix(phi_inv);
 
   for (int u = 0; u < (int) diagonal; u++) {
     for (int v = 0; v < (int) diagonal; v++) {
@@ -270,18 +309,140 @@ ImgVol CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> ve
       Matrix *p = MultMatrices(phi_inv, q);
       int intensity;
 
-      if (p->val[0] < 0 || p->val[1] < 0 || p->val[2] < 0)
+//      PrintMatrix(p);
+
+      if (p->val[0] < 0 || p->val[1] < 0 || p->val[2] < 0) {
         intensity = 0;
-      else  if (p->val[0] > img.SizeX() || p->val[1] < img.SizeY() || p->val[2] > img.SizeZ())
+      } else  if (p->val[0] >= img.SizeX() || p->val[1] >= img.SizeY() || p->val[2] >= img.SizeZ()) {
         intensity = 0;
-      else {
+      } else {
         Point point{p->val[0], p->val[1], p->val[2]};
         intensity = ImageValueAtPoint(img.Img(), point);
+//         PrintMatrix(p);
       }
+
+      img_out(intensity, u, v);
     }
   }
 
+  img_out(255, 0, 0);
+
+  return img_out;
 }
+
+// ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y) {
+//   float diagonal = Diagonal(std::array<float, 3>{img.SizeX(), img.SizeY(), img.SizeZ()});
+//
+//   Matrix *pc_l = CreateMatrix(4, 4);
+//   pc_l->val[0] = 1;
+//   pc_l->val[1] = 0;
+//   pc_l->val[2] = 0;
+//   pc_l->val[3] = diagonal/2;
+//   pc_l->val[4] = 0;
+//   pc_l->val[5] = 1;
+//   pc_l->val[6] = 0;
+//   pc_l->val[7] = diagonal/2;
+//   pc_l->val[8] = 0;
+//   pc_l->val[9] = 0;
+//   pc_l->val[10] = 1;
+//   pc_l->val[11] = diagonal/2;
+//   pc_l->val[12] = 0;
+//   pc_l->val[13] = 0;
+//   pc_l->val[14] = 0;
+//   pc_l->val[15] = 1;
+//
+//   Matrix *rotx = CreateMatrix(4, 4);
+//   rotx->val[0] = 1;
+//   rotx->val[1] = 0;
+//   rotx->val[2] = 0;
+//   rotx->val[3] = 0;
+//   rotx->val[4] = 0;
+//   rotx->val[5] = cos(-delta_x);
+//   rotx->val[6] = -sin(-delta_x);
+//   rotx->val[7] = 0;
+//   rotx->val[8] = 0;
+//   rotx->val[9] = sin(-delta_x);
+//   rotx->val[10] = cos(-delta_x);
+//   rotx->val[11] = 0;
+//   rotx->val[12] = 0;
+//   rotx->val[13] = 0;
+//   rotx->val[14] = 0;
+//   rotx->val[15] = 1;
+//
+//   Matrix *roty = CreateMatrix(4, 4);
+//   roty->val[0] = cos(-delta_y);
+//   roty->val[1] = 0;
+//   roty->val[2] = sin(-delta_y);
+//   roty->val[3] = 0;
+//   roty->val[4] = 0;
+//   roty->val[5] = 1;
+//   roty->val[6] = 0;
+//   roty->val[7] = 0;
+//   roty->val[8] = -sin(-delta_y);
+//   roty->val[9] = 0;
+//   roty->val[10] = cos(-delta_y);
+//   roty->val[11] = 0;
+//   roty->val[12] = 0;
+//   roty->val[13] = 0;
+//   roty->val[14] = 0;
+//   roty->val[15] = 1;
+//
+//   Matrix *pc = CreateMatrix(4, 4);
+//   pc->val[0] = 1;
+//   pc->val[1] = 0;
+//   pc->val[2] = 0;
+//   pc->val[3] = img.SizeX()/2;
+//   pc->val[4] = 0;
+//   pc->val[5] = 1;
+//   pc->val[6] = 0;
+//   pc->val[7] = img.SizeY()/2;
+//   pc->val[8] = 0;
+//   pc->val[9] = 0;
+//   pc->val[10] = 1;
+//   pc->val[11] = img.SizeZ()/2;
+//   pc->val[12] = 0;
+//   pc->val[13] = 0;
+//   pc->val[14] = 0;
+//   pc->val[15] = 1;
+//
+//   Matrix *tmp_rx_tqc = MultMatrices(rotx, t_mqc);
+//   Matrix* tmp_ry_rx_tqc = MultMatrices(roty, tmp_rx_tqc);
+//   Matrix *phi_inv = MultMatrices(t_p1, tmp_ry_rx_tqc);
+//
+//   ImgGray img_out(diagonal, diagonal);
+//   Matrix *q = CreateMatrix(1, 4);
+//
+//   for (int u = 0; u < (int) diagonal; u++) {
+//     for (int v = 0; v < (int) diagonal; v++) {
+//       q->val[0] = u;
+//       q->val[1] = v;
+//       q->val[2] = -diagonal/2;
+//       q->val[3] = 1;
+//
+//       Matrix *p = MultMatrices(phi_inv, q);
+//       int intensity;
+//
+//      PrintMatrix(p);
+//
+//      p->val[1] = -p->val[1];
+//
+//       if (p->val[0] < 0 || p->val[1] < 0 || p->val[2] < 0) {
+//         intensity = 0;
+//       } else  if (p->val[0] > img.SizeX() || p->val[1] > img.SizeY() || p->val[2] > img.SizeZ()) {
+//         intensity = 0;
+//       } else {
+//         Point point{p->val[0], p->val[1], p->val[2]};
+//         intensity = ImageValueAtPoint(img.Img(), point);
+//       }
+//
+//       img_out(intensity, u, v);
+//     }
+//   }
+//
+//   img_out(255, 0, 0);
+//
+//   return img_out;
+// }
 
 std::array<float, 3> Translate(std::array<float, 3> point, std::array<float, 3> dist) {
   std::array<float, 3> p;

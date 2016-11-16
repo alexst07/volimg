@@ -4,14 +4,16 @@
 #include "img2d.h"
 
 int main(int argc, char **argv) {
-  imgvol::ImgVol img("/home/alex/Downloads/libmc920/data/brain.scn");
+  imgvol::ImgVol img("/home/alex/Downloads/libmc920/data/skull.scn");
   imgvol::ImgVol img_label("/home/alex/Downloads/libmc920/data/brain_label.scn");
   std::cout << img << "\n";
 
   imgvol::ImgVol imgout = Interp(img, 2, 2, 2);
-  imgvol::Img2D img2dz = imgvol::Cut(imgout, imgvol::ImgVol::Axis::aZ, 100);
+  imgvol::Img2D img2dz = imgvol::Cut(imgout, imgvol::ImgVol::Axis::aZ, 50);
   imgvol::ImgVet imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
   imggray.WriteImg("test");
+  imgvol::ImgGray planar =  imgvol::CortePlanar(img, std::array<float, 3>{78, 127, 127}, std::array<float, 3>{0, 0, 1});
+  planar.WriteImg("planar");
 
 //   std::cout << img(57, 9, 35) << "\n";
 //
