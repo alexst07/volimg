@@ -73,20 +73,10 @@ class Img2D {
     return pixels_[i];
   }
 
-  friend std::ostream& operator<<(std::ostream& stream,
-                                  Img2D& img);
-
  private:
   std::vector<int> pixels_;
   size_t xsize_;
   size_t ysize_;
 };
-
-std::ostream& operator<<(std::ostream& stream,
-                         Img2D& img) {
-  stream << "Img sizes[X: "<< img.SizeX() << ", Y: " << img.SizeY()
-  << "]";
-  return stream;
-}
 
 }

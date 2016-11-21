@@ -113,7 +113,7 @@ void BrightinessContrast(Img2D& img, size_t num_bits, float b, float c) {
   float i2 = (c_real + 2*b_real)/2;
 //   float i2 = i1;
 
-  std::cout << "i1: " << i1 << " i2: " << i2 << "\n";
+//   std::cout << "i1: " << i1 << " i2: " << i2 << "\n";
 
   for (size_t i = 0; i < img.NumPixels(); i++) {
     if (img[i] < i1)
@@ -152,7 +152,7 @@ ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits) {
       int m = tab_color[p];
 
       float v = m/h;
-      std::cout << "v: " << v << "  ";
+//       std::cout << "v: " << v << "  ";
       v = 4*v +1;
       cor[0] = h*std::max(float(0), (3- abs(v-4) - abs(v - 5))/2);
       cor[1] = h*std::max(float(0), (4- abs(v-2) - abs(v - 4))/2);
@@ -170,10 +170,10 @@ ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits) {
 void PrintMatrix(Matrix *m) {
   for (int i = 0; i < m->nrows; i++) {
     for (int j = 0; j < m->ncols; j++){
-      std::cout << m->val[j+i*m->ncols] << " ";
+//       std::cout << m->val[j+i*m->ncols] << " ";
     }
 
-    std::cout << '\n';
+//     std::cout << '\n';
   }
 }
 
@@ -214,8 +214,8 @@ ImgGray CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> v
 //     }
   }
 
-  std::cout << "alpha_x: " << alpha_x << "\n";
-  std::cout << "alpha_y: " << alpha_y << "\n";
+//   std::cout << "alpha_x: " << alpha_x << "\n";
+//   std::cout << "alpha_y: " << alpha_y << "\n";
 
   Matrix *t_mqc = CreateMatrix(4, 4);
   t_mqc->val[0] = 1;
@@ -325,124 +325,196 @@ ImgGray CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> v
     }
   }
 
-  img_out(255, 0, 0);
-
   return img_out;
 }
 
-// ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y) {
-//   float diagonal = Diagonal(std::array<float, 3>{img.SizeX(), img.SizeY(), img.SizeZ()});
-//
-//   Matrix *pc_l = CreateMatrix(4, 4);
-//   pc_l->val[0] = 1;
-//   pc_l->val[1] = 0;
-//   pc_l->val[2] = 0;
-//   pc_l->val[3] = diagonal/2;
-//   pc_l->val[4] = 0;
-//   pc_l->val[5] = 1;
-//   pc_l->val[6] = 0;
-//   pc_l->val[7] = diagonal/2;
-//   pc_l->val[8] = 0;
-//   pc_l->val[9] = 0;
-//   pc_l->val[10] = 1;
-//   pc_l->val[11] = diagonal/2;
-//   pc_l->val[12] = 0;
-//   pc_l->val[13] = 0;
-//   pc_l->val[14] = 0;
-//   pc_l->val[15] = 1;
-//
-//   Matrix *rotx = CreateMatrix(4, 4);
-//   rotx->val[0] = 1;
-//   rotx->val[1] = 0;
-//   rotx->val[2] = 0;
-//   rotx->val[3] = 0;
-//   rotx->val[4] = 0;
-//   rotx->val[5] = cos(-delta_x);
-//   rotx->val[6] = -sin(-delta_x);
-//   rotx->val[7] = 0;
-//   rotx->val[8] = 0;
-//   rotx->val[9] = sin(-delta_x);
-//   rotx->val[10] = cos(-delta_x);
-//   rotx->val[11] = 0;
-//   rotx->val[12] = 0;
-//   rotx->val[13] = 0;
-//   rotx->val[14] = 0;
-//   rotx->val[15] = 1;
-//
-//   Matrix *roty = CreateMatrix(4, 4);
-//   roty->val[0] = cos(-delta_y);
-//   roty->val[1] = 0;
-//   roty->val[2] = sin(-delta_y);
-//   roty->val[3] = 0;
-//   roty->val[4] = 0;
-//   roty->val[5] = 1;
-//   roty->val[6] = 0;
-//   roty->val[7] = 0;
-//   roty->val[8] = -sin(-delta_y);
-//   roty->val[9] = 0;
-//   roty->val[10] = cos(-delta_y);
-//   roty->val[11] = 0;
-//   roty->val[12] = 0;
-//   roty->val[13] = 0;
-//   roty->val[14] = 0;
-//   roty->val[15] = 1;
-//
-//   Matrix *pc = CreateMatrix(4, 4);
-//   pc->val[0] = 1;
-//   pc->val[1] = 0;
-//   pc->val[2] = 0;
-//   pc->val[3] = img.SizeX()/2;
-//   pc->val[4] = 0;
-//   pc->val[5] = 1;
-//   pc->val[6] = 0;
-//   pc->val[7] = img.SizeY()/2;
-//   pc->val[8] = 0;
-//   pc->val[9] = 0;
-//   pc->val[10] = 1;
-//   pc->val[11] = img.SizeZ()/2;
-//   pc->val[12] = 0;
-//   pc->val[13] = 0;
-//   pc->val[14] = 0;
-//   pc->val[15] = 1;
-//
-//   Matrix *tmp_rx_tqc = MultMatrices(rotx, t_mqc);
-//   Matrix* tmp_ry_rx_tqc = MultMatrices(roty, tmp_rx_tqc);
-//   Matrix *phi_inv = MultMatrices(t_p1, tmp_ry_rx_tqc);
-//
-//   ImgGray img_out(diagonal, diagonal);
-//   Matrix *q = CreateMatrix(1, 4);
-//
-//   for (int u = 0; u < (int) diagonal; u++) {
-//     for (int v = 0; v < (int) diagonal; v++) {
-//       q->val[0] = u;
-//       q->val[1] = v;
-//       q->val[2] = -diagonal/2;
-//       q->val[3] = 1;
-//
-//       Matrix *p = MultMatrices(phi_inv, q);
-//       int intensity;
-//
-//      PrintMatrix(p);
-//
-//      p->val[1] = -p->val[1];
-//
-//       if (p->val[0] < 0 || p->val[1] < 0 || p->val[2] < 0) {
-//         intensity = 0;
-//       } else  if (p->val[0] > img.SizeX() || p->val[1] > img.SizeY() || p->val[2] > img.SizeZ()) {
-//         intensity = 0;
-//       } else {
-//         Point point{p->val[0], p->val[1], p->val[2]};
-//         intensity = ImageValueAtPoint(img.Img(), point);
-//       }
-//
-//       img_out(intensity, u, v);
-//     }
-//   }
-//
-//   img_out(255, 0, 0);
-//
-//   return img_out;
-// }
+std::array<float,3> CalcVector(std::array<float,3> p1, std::array<float,3> pn) {
+  std::array<float, 3> sub = {pn[0] - p1[0], pn[1] - p1[1], pn[2] - p1[2]};
+
+  float r = sqrt(sub[0]*sub[0] + sub[1]*sub[1] + sub[2]*sub[2]);
+  std::array<float, 3> vr = {sub[0]/r, sub[1]/r, sub[2]/r};
+
+  return vr;
+}
+
+void FillImg(const ImgGray& img_gray, size_t z, ImgVol* img_vol) {
+  for (size_t iy = 0; iy < img_gray.SizeY(); iy++) {
+    for (size_t ix = 0; ix < img_gray.SizeX(); ix++) {
+      img_vol->SetVoxelIntensity(img_gray(ix, iy), ix, iy, z);
+    }
+  }
+}
+
+ImgVol ReformataImg(ImgVol& img, size_t n, std::array<float,3> p1, std::array<float,3> pn) {
+  float dz2 = (pn[2] - p1[2])/float(n);
+
+  std::array<float, 3> sub = {pn[0] - p1[0], pn[1] - p1[1], pn[2] - p1[2]};
+
+  float lambda = sqrt(sub[0]*sub[0] + sub[1]*sub[1] + sub[2]*sub[2]);
+  std::array<float, 3> vec = {sub[0]/lambda, sub[1]/lambda, sub[2]/lambda};
+  lambda = lambda/n;
+
+  float diagonal = Diagonal(std::array<float, 3>{img.SizeX(), img.SizeY(), img.SizeZ()});
+
+  ImgVol img_vol(diagonal, diagonal, n);
+  std::cout << "Lambda: " << lambda << "\n";
+  std::cout << "vec: " << vec[0] << ", " << vec[1] << ", " << vec[2] << "\n";
+
+  std::array<float, 3> p = p1;
+  for (size_t i = 0; i < n; i++) {
+    std::array<float, 3> v_inc = {lambda*vec[0], lambda*vec[1], lambda*vec[2]};
+    p[0] = p[0] + v_inc[0];
+    p[1] = p[1] + v_inc[1];
+    p[2] = p[2] + v_inc[2];
+    ImgGray img_gray = CortePlanar(img, p, vec);
+    std::string name = "imgs/img_";
+    img_gray.WriteImg(name + std::to_string(i));
+    FillImg(img_gray, i, &img_vol);
+  }
+
+  return img_vol;
+}
+
+ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y) {
+  float diagonal = Diagonal(std::array<float, 3>{img.SizeX(), img.SizeY(), img.SizeZ()});
+
+  Matrix *pc_l = CreateMatrix(4, 4);
+  pc_l->val[0] = 1;
+  pc_l->val[1] = 0;
+  pc_l->val[2] = 0;
+  pc_l->val[3] = -diagonal/2;
+  pc_l->val[4] = 0;
+  pc_l->val[5] = 1;
+  pc_l->val[6] = 0;
+  pc_l->val[7] = -diagonal/2;
+  pc_l->val[8] = 0;
+  pc_l->val[9] = 0;
+  pc_l->val[10] = 1;
+  pc_l->val[11] = -diagonal/2;
+  pc_l->val[12] = 0;
+  pc_l->val[13] = 0;
+  pc_l->val[14] = 0;
+  pc_l->val[15] = 1;
+
+  Matrix *rotx = CreateMatrix(4, 4);
+  rotx->val[0] = 1;
+  rotx->val[1] = 0;
+  rotx->val[2] = 0;
+  rotx->val[3] = 0;
+  rotx->val[4] = 0;
+  rotx->val[5] = cos(-delta_x);
+  rotx->val[6] = -sin(-delta_x);
+  rotx->val[7] = 0;
+  rotx->val[8] = 0;
+  rotx->val[9] = sin(-delta_x);
+  rotx->val[10] = cos(-delta_x);
+  rotx->val[11] = 0;
+  rotx->val[12] = 0;
+  rotx->val[13] = 0;
+  rotx->val[14] = 0;
+  rotx->val[15] = 1;
+
+  Matrix *roty = CreateMatrix(4, 4);
+  roty->val[0] = cos(-delta_y);
+  roty->val[1] = 0;
+  roty->val[2] = sin(-delta_y);
+  roty->val[3] = 0;
+  roty->val[4] = 0;
+  roty->val[5] = 1;
+  roty->val[6] = 0;
+  roty->val[7] = 0;
+  roty->val[8] = -sin(-delta_y);
+  roty->val[9] = 0;
+  roty->val[10] = cos(-delta_y);
+  roty->val[11] = 0;
+  roty->val[12] = 0;
+  roty->val[13] = 0;
+  roty->val[14] = 0;
+  roty->val[15] = 1;
+
+  Matrix *pc = CreateMatrix(4, 4);
+  pc->val[0] = 1;
+  pc->val[1] = 0;
+  pc->val[2] = 0;
+  pc->val[3] = img.SizeX()/2;
+  pc->val[4] = 0;
+  pc->val[5] = 1;
+  pc->val[6] = 0;
+  pc->val[7] = img.SizeY()/2;
+  pc->val[8] = 0;
+  pc->val[9] = 0;
+  pc->val[10] = 1;
+  pc->val[11] = img.SizeZ()/2;
+  pc->val[12] = 0;
+  pc->val[13] = 0;
+  pc->val[14] = 0;
+  pc->val[15] = 1;
+
+  size_t nx = img.SizeX();
+  size_t ny = img.SizeY();
+  size_t nz = img.SizeZ();
+  std::vector<std::array<float, 3>> nj = {{1, 0, 0}, {-1, 0, 0},
+                                          {0, 1, 0}, {0, -1, 0},
+                                          {0, 0, 1}, {0, 0, -1}};
+
+  std::vector<std::array<float, 3>> cj = {{nx-1, ny/2, nz/2}, {0, ny/2, nz/2},
+                                          {nx/2, ny-1, nz/2}, {nx/2, 0, nz/2},
+                                          {nx/2, ny/2, nz-1}, {nx/2, ny/2, 0}};
+
+
+  Matrix *tmp_ry_pcl = MultMatrices(roty, pc_l);
+  Matrix* tmp_rx_ry_pcl = MultMatrices(rotx, tmp_ry_pcl);
+  Matrix *phi_inv = MultMatrices(pc, tmp_rx_ry_pcl);
+}
+
+float Dda3d(ImgVol& img, std::array<float,3> p1, std::array<float,3> pn) {
+  float n;
+  float Dx, Dy, Dz;
+  float dx, dy, dz;
+  if (p1 == pn) {
+    n = 1;
+  } else {
+    Dx = pn[0] - p1[0];
+    Dy = pn[1] - p1[1];
+    Dz = pn[2] - p1[2];
+
+    if (abs(Dx) >= abs(Dy) && abs(Dx) >= abs(Dz)) {
+      n = abs(Dx) + 1;
+      dx = Sign(Dx);
+      dy = dx*Dy/Dx;
+      dz = dx*Dz/Dx;
+    } else {
+      if (abs(Dy) >= abs(Dx) && abs(Dy) >= abs(Dz)) {
+        n = abs(Dy) + 1;
+        dy = Sign(Dy);
+        dx = dy*Dx/Dy;
+        dz = dy*Dz/Dy;
+      } else {
+        n = abs(Dz) + 1;
+        dz = Sign(Dz);
+        dx = dz*Dx/Dz;
+        dy = dz*Dy/Dz;
+      }
+    }
+  }
+
+  std::array<float,3> p = p1;
+  float max_i = -1;
+
+  for (size_t k = 0; k < n; k++) {
+    Point point{p[0], p[1], p[2]};
+    int i = ImageValueAtPoint(img.Img(), point);
+    if (i > max_i) {
+      max_i = i;
+    }
+
+    p[0] = p[0] + dx;
+    p[1] = p[1] + dy;
+    p[2] = p[2] + dz;
+  }
+
+  return max_i;
+}
 
 std::array<float, 3> Translate(std::array<float, 3> point, std::array<float, 3> dist) {
   std::array<float, 3> p;
@@ -615,7 +687,7 @@ ImgGray DrawWireframe(const ImgVol& img_vol, std::array<float, 3> rad) {
   std::array<bool, 6> faces = VisibleFaces(rad);
 
   for (auto f: faces) {
-    std::cout << "faces: " << f << "\n";
+//     std::cout << "faces: " << f << "\n";
   }
 
   if (faces[5]) {

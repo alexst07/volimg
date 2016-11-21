@@ -5,15 +5,37 @@
 
 int main(int argc, char **argv) {
   imgvol::ImgVol img("/home/alex/Downloads/libmc920/data/skull.scn");
-  imgvol::ImgVol img_label("/home/alex/Downloads/libmc920/data/brain_label.scn");
+//   imgvol::ImgVol img_label("/home/alex/Downloads/libmc920/data/brain_label.scn");
   std::cout << img << "\n";
+  std::array<float,3> p1 = {50,50,0};
+  std::array<float,3> pn = {50,50,100};
 
-  imgvol::ImgVol imgout = Interp(img, 2, 2, 2);
-  imgvol::Img2D img2dz = imgvol::Cut(imgout, imgvol::ImgVol::Axis::aZ, 50);
-  imgvol::ImgVet imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
-  imggray.WriteImg("test");
-  imgvol::ImgGray planar =  imgvol::CortePlanar(img, std::array<float, 3>{78, 127, 127}, std::array<float, 3>{0, 0, 1});
-  planar.WriteImg("planar");
+  imgvol::ImgVol img_vol = imgvol::ReformataImg(img, 100, p1, pn);
+  img_vol.WriteImg("reformat");
+
+//   for (size_t i = 0; i < 20; i++) {
+// //     imgvol::Img2D img2dz = imgvol::Cut(img_vol, imgvol::ImgVol::Axis::aZ, i);
+//     std::string stri = std::to_string(i);
+//     std::string name = "corte_";
+//     imgvol::ImgGray planar =  imgvol::CortePlanar(img, std::array<float, 3>{30, 127, i*5},
+//                                                   std::array<float, 3>{2, 3, 2});
+//     planar.WriteImg(name+stri);
+//   }
+
+  for (size_t i = 0; i < 5; i++) {
+    imgvol::Img2D img2dz = imgvol::Cut(img_vol, imgvol::ImgVol::Axis::aZ, i);
+    std::string stri = std::to_string(i);
+    std::string name = "corte_";
+    imgvol::ImgVet imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
+    imggray.WriteImg(name+stri);
+  }
+
+//   imgvol::ImgVol imgout = Interp(img, 2, 2, 2);
+//   imgvol::Img2D img2dz = imgvol::Cut(imgout, imgvol::ImgVol::Axis::aZ, 50);
+//   imgvol::ImgVet imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
+//   imggray.WriteImg("test");
+//   imgvol::ImgGray planar =  imgvol::CortePlanar(img, std::array<float, 3>{78, 127, 127}, std::array<float, 3>{0, 0, 1});
+//   planar.WriteImg("planar");
 
 //   std::cout << img(57, 9, 35) << "\n";
 //
