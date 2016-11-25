@@ -266,6 +266,28 @@ ImgVol::ImgVol(std::string file_name) {
   img_ = ReadMedicalImage(const_cast<char*>(file_name.c_str()));
 }
 
+ImgVol::ImgVol(const ImgVol& img) {
+  for (size_t x = 0; x < SizeX(); x++) {
+    for (size_t y = 0; y < SizeY(); y++) {
+      for (size_t z = 0; z < SizeZ(); z++) {
+        SetVoxelIntensity(img.VoxelIntensity(x, y, z), x, y, z);
+      }
+    }
+  }
+}
+
+ImgVol& ImgVol::operator=(const ImgVol& img) {
+  for (size_t x = 0; x < SizeX(); x++) {
+    for (size_t y = 0; y < SizeY(); y++) {
+      for (size_t z = 0; z < SizeZ(); z++) {
+        SetVoxelIntensity(img.VoxelIntensity(x, y, z), x, y, z);
+      }
+    }
+  }
+
+  return *this;
+}
+
 ImgVol::~ImgVol() {
   DestroyMedicalImage(&img_);
 }

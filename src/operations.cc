@@ -4,6 +4,8 @@
 #include <iostream>
 #include <algorithm>
 #include <random>
+#include <cstdio>
+#include <cstdlib>
 #include <map>
 #include "operations.h"
 
@@ -170,10 +172,10 @@ ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits) {
 void PrintMatrix(Matrix *m) {
   for (int i = 0; i < m->nrows; i++) {
     for (int j = 0; j < m->ncols; j++){
-//       std::cout << m->val[j+i*m->ncols] << " ";
+      std::cout << m->val[j+i*m->ncols] << " ";
     }
 
-//     std::cout << '\n';
+    std::cout << '\n';
   }
 }
 
@@ -357,8 +359,8 @@ ImgVol ReformataImg(ImgVol& img, size_t n, std::array<float,3> p1, std::array<fl
   float diagonal = Diagonal(std::array<float, 3>{img.SizeX(), img.SizeY(), img.SizeZ()});
 
   ImgVol img_vol(diagonal, diagonal, n);
-  std::cout << "Lambda: " << lambda << "\n";
-  std::cout << "vec: " << vec[0] << ", " << vec[1] << ", " << vec[2] << "\n";
+//   std::cout << "Lambda: " << lambda << "\n";
+//   std::cout << "vec: " << vec[0] << ", " << vec[1] << ", " << vec[2] << "\n";
 
   std::array<float, 3> p = p1;
   for (size_t i = 0; i < n; i++) {
@@ -367,16 +369,18 @@ ImgVol ReformataImg(ImgVol& img, size_t n, std::array<float,3> p1, std::array<fl
     p[1] = p[1] + v_inc[1];
     p[2] = p[2] + v_inc[2];
     ImgGray img_gray = CortePlanar(img, p, vec);
-    std::string name = "imgs/img_";
-    img_gray.WriteImg(name + std::to_string(i));
+//     std::string name = "imgs/img_";
+//     img_gray.WriteImg(name + std::to_string(i));
     FillImg(img_gray, i, &img_vol);
   }
 
   return img_vol;
 }
 
-ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y) {
+ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::array<float, 3> vet_normal) {
   float diagonal = Diagonal(std::array<float, 3>{img.SizeX(), img.SizeY(), img.SizeZ()});
+
+  vet_normal = VecNorm(vet_normal);
 
   Matrix *pc_l = CreateMatrix(4, 4);
   pc_l->val[0] = 1;
@@ -436,15 +440,15 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y) {
   pc->val[0] = 1;
   pc->val[1] = 0;
   pc->val[2] = 0;
-  pc->val[3] = img.SizeX()/2;
+  pc->val[3] = (img.SizeX()-1)/2;
   pc->val[4] = 0;
   pc->val[5] = 1;
   pc->val[6] = 0;
-  pc->val[7] = img.SizeY()/2;
+  pc->val[7] = (img.SizeY()-1)/2;
   pc->val[8] = 0;
   pc->val[9] = 0;
   pc->val[10] = 1;
-  pc->val[11] = img.SizeZ()/2;
+  pc->val[11] = (img.SizeZ() -1)/2;
   pc->val[12] = 0;
   pc->val[13] = 0;
   pc->val[14] = 0;
@@ -457,14 +461,104 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y) {
                                           {0, 1, 0}, {0, -1, 0},
                                           {0, 0, 1}, {0, 0, -1}};
 
-  std::vector<std::array<float, 3>> cj = {{nx-1, ny/2, nz/2}, {0, ny/2, nz/2},
-                                          {nx/2, ny-1, nz/2}, {nx/2, 0, nz/2},
-                                          {nx/2, ny/2, nz-1}, {nx/2, ny/2, 0}};
+  std::vector<std::array<float, 3>> cj = {{nx-1, (ny-1)/2, (nz-1)/2}, {0, (ny-1)/2, (nz-1)/2},
+                                          {(nx-1)/2, ny-1, (nz-1)/2}, {(nx-1)/2, 0, (nz-1)/2},
+                                          {(nx-1)/2, (ny-1)/2, nz-1}, {(nx-1)/2, (ny-1)/2, 0}};
 
 
-  Matrix *tmp_ry_pcl = MultMatrices(roty, pc_l);
-  Matrix* tmp_rx_ry_pcl = MultMatrices(rotx, tmp_ry_pcl);
-  Matrix *phi_inv = MultMatrices(pc, tmp_rx_ry_pcl);
+  Matrix *v_norm_mat = CreateMatrix(1, 4);
+  v_norm_mat->val[0] = vet_normal[0];
+  v_norm_mat->val[1] = vet_normal[1];
+  v_norm_mat->val[2] = vet_normal[2];
+  v_norm_mat->val[3] = 1;
+
+  Matrix *tmp_rx_norm_mat = MultMatrices(rotx, v_norm_mat);
+  Matrix *phi_inv_norm = MultMatrices(roty, tmp_rx_norm_mat);
+  phi_inv_norm->val[3] = 0;
+
+  PrintMatrix(phi_inv_norm);
+
+  ImgGray img_out(diagonal, diagonal);
+
+  float term_1, term_2, term_3, lambda[6], lambda_max, lambda_min;
+
+  std::array<float,3> p1;
+  std::array<float,3> pn;
+
+  Matrix *q = CreateMatrix(1, 4);
+
+  Matrix *find_point = CreateMatrix(1, 4);
+
+  for (int i = 0; i < diagonal; i++) {
+    for (int j = 0; j < diagonal; j++) {
+      lambda_max = 0;
+      lambda_min = 2*diagonal;
+
+      q->val[0] = i;
+      q->val[1] = j;
+      q->val[2] = -diagonal/2;
+      q->val[3] = 1;
+
+      Matrix *tmp_pcl_q = MultMatrices(pc_l, q);
+      Matrix* tmp_rx_pcl_q = MultMatrices(rotx, tmp_pcl_q);
+      Matrix* tmp_ry_rx_pcl_q = MultMatrices(roty, tmp_rx_pcl_q);
+      Matrix *q_inv = MultMatrices(pc, tmp_ry_rx_pcl_q);
+      q_inv->val[3] = 0;
+
+      PrintMatrix(q_inv);
+
+      for (int a = 0; a < 6; a++) {
+        term_1 = 0;
+        term_2 = 0;
+        term_3 = 0;
+        for (int x = 0; x < 3; x++) {
+          term_1 += nj[a][x]*cj[a][x];
+        }
+
+        for (int x = 0; x < 3; x++) {
+          term_2 += nj[a][x]*q_inv->val[x];
+        }
+
+        for (int x = 0; x < 3; x++) {
+          term_3 += nj[a][x]*phi_inv_norm->val[x];
+        }
+
+        std::cout << "termo 1: " << term_1 << "\n";
+        std::cout << "termo 2: " << term_2 << "\n";
+        std::cout << "termo 3: " << term_3 << "\n";
+
+        lambda[a] = (term_1-term_2)/term_3;
+        find_point->val[0] = std::round(q_inv->val[0] + lambda[a]*phi_inv_norm->val[0]);
+        find_point->val[1] = std::round(q_inv->val[1] + lambda[a]*phi_inv_norm->val[1]);
+        find_point->val[2] = std::round(q_inv->val[2] + lambda[a]*phi_inv_norm->val[2]);
+        find_point->val[3] = 1;
+
+//         std::cout << "lambda[a]: " << lambda[a] << "\n";
+
+        if (find_point->val[0] >= 0 && find_point->val[0] < nx && find_point->val[1] >= 0 && find_point->val[1] < ny &&
+          find_point->val[2] >= 0 && find_point->val[2] < nz) {
+
+          std::cout << "Entrou\n";
+          if (lambda[a] > lambda_max) {
+            lambda_max = lambda[a];
+            pn[0] = find_point->val[0];
+            pn[1] = find_point->val[1];
+            pn[2] = find_point->val[2];
+          }
+
+          if (lambda[a] < lambda_min) {
+            lambda_min = lambda[a];
+            p1[0] = find_point->val[0];
+            p1[1] = find_point->val[1];
+            p1[2] = find_point->val[2];
+          }
+        }
+      } // for a
+
+      float dda = Dda3d(img, p1, pn);
+      img_out(static_cast<int>(dda), i, j);
+    }
+  }
 }
 
 float Dda3d(ImgVol& img, std::array<float,3> p1, std::array<float,3> pn) {

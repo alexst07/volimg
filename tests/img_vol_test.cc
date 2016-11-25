@@ -10,8 +10,11 @@ int main(int argc, char **argv) {
   std::array<float,3> p1 = {50,50,0};
   std::array<float,3> pn = {50,50,100};
 
-  imgvol::ImgVol img_vol = imgvol::ReformataImg(img, 100, p1, pn);
-  img_vol.WriteImg("reformat");
+  imgvol::ImgGray img_gray = imgvol::MaxIntensionProjection(img, M_PI/180*45, M_PI/180*45, std::array<float, 3>{0,0,1});
+  img_gray.WriteImg("mip");
+
+//   imgvol::ImgVol img_vol = imgvol::ReformataImg(img, 100, p1, pn);
+//   img_vol.WriteImg("reformat");
 
 //   for (size_t i = 0; i < 20; i++) {
 // //     imgvol::Img2D img2dz = imgvol::Cut(img_vol, imgvol::ImgVol::Axis::aZ, i);
@@ -22,13 +25,13 @@ int main(int argc, char **argv) {
 //     planar.WriteImg(name+stri);
 //   }
 
-  for (size_t i = 0; i < 5; i++) {
-    imgvol::Img2D img2dz = imgvol::Cut(img_vol, imgvol::ImgVol::Axis::aZ, i);
-    std::string stri = std::to_string(i);
-    std::string name = "corte_";
-    imgvol::ImgVet imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
-    imggray.WriteImg(name+stri);
-  }
+//   for (size_t i = 0; i < 5; i++) {
+//     imgvol::Img2D img2dz = imgvol::Cut(img_vol, imgvol::ImgVol::Axis::aZ, i);
+//     std::string stri = std::to_string(i);
+//     std::string name = "corte_";
+//     imgvol::ImgVet imggray(img2dz.Data(), img2dz.SizeX(), img2dz.SizeY());
+//     imggray.WriteImg(name+stri);
+//   }
 
 //   imgvol::ImgVol imgout = Interp(img, 2, 2, 2);
 //   imgvol::Img2D img2dz = imgvol::Cut(imgout, imgvol::ImgVol::Axis::aZ, 50);

@@ -122,14 +122,14 @@ class ImgVol {
     img_ = img;
   }
 
-  ImgVol(const ImgVol&) = delete;
+  ImgVol(const ImgVol& img);
 
   ImgVol(ImgVol&& img) {
     img_ = img.img_;
     img.img_ = nullptr;
   }
 
-  ImgVol& operator=(const ImgVol&) = delete;
+  ImgVol& operator=(const ImgVol& img);
 
   ImgVol& operator=(ImgVol&& img) {
     img_ = img.img_;
