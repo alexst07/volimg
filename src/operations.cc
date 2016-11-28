@@ -381,6 +381,7 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::a
   float diagonal = Diagonal(std::array<float, 3>{img.SizeX(), img.SizeY(), img.SizeZ()});
 
   vet_normal = VecNorm(vet_normal);
+  NormalizeImage(img);
 
   Matrix *pc_l = CreateMatrix(4, 4);
   pc_l->val[0] = 1;
@@ -472,8 +473,8 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::a
   v_norm_mat->val[2] = vet_normal[2];
   v_norm_mat->val[3] = 1;
 
-  Matrix *tmp_rx_norm_mat = MultMatrices(rotx, v_norm_mat);
-  Matrix *phi_inv_norm = MultMatrices(roty, tmp_rx_norm_mat);
+  Matrix *tmp_rx_norm_mat = MultMatrices(roty, v_norm_mat);
+  Matrix *phi_inv_norm = MultMatrices(rotx, tmp_rx_norm_mat);
   phi_inv_norm->val[3] = 0;
 
   PrintMatrix(phi_inv_norm);
@@ -500,12 +501,14 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::a
       q->val[3] = 1;
 
       Matrix *tmp_pcl_q = MultMatrices(pc_l, q);
-      Matrix* tmp_rx_pcl_q = MultMatrices(rotx, tmp_pcl_q);
-      Matrix* tmp_ry_rx_pcl_q = MultMatrices(roty, tmp_rx_pcl_q);
+      Matrix* tmp_rx_pcl_q = MultMatrices(roty, tmp_pcl_q);
+      Matrix* tmp_ry_rx_pcl_q = MultMatrices(rotx, tmp_rx_pcl_q);
       Matrix *q_inv = MultMatrices(pc, tmp_ry_rx_pcl_q);
       q_inv->val[3] = 0;
 
-      PrintMatrix(q_inv);
+//       PrintMatrix(q_inv);
+
+      bool passed_if = false;
 
       for (int a = 0; a < 6; a++) {
         term_1 = 0;
@@ -523,11 +526,14 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::a
           term_3 += nj[a][x]*phi_inv_norm->val[x];
         }
 
-        std::cout << "termo 1: " << term_1 << "\n";
-        std::cout << "termo 2: " << term_2 << "\n";
-        std::cout << "termo 3: " << term_3 << "\n";
+//         std::cout << "termo 1: " << term_1 << "\n";
+//         std::cout << "termo 2: " << term_2 << "\n";
+//         std::cout << "termo 3: " << term_3 << "\n";
 
         lambda[a] = (term_1-term_2)/term_3;
+
+//         std::cout << "Lambda[" << a << "]: " << lambda[a] << "\n";
+
         find_point->val[0] = std::round(q_inv->val[0] + lambda[a]*phi_inv_norm->val[0]);
         find_point->val[1] = std::round(q_inv->val[1] + lambda[a]*phi_inv_norm->val[1]);
         find_point->val[2] = std::round(q_inv->val[2] + lambda[a]*phi_inv_norm->val[2]);
@@ -535,10 +541,14 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::a
 
 //         std::cout << "lambda[a]: " << lambda[a] << "\n";
 
+//         std::cout << "find_point->val[0]: " << find_point->val[0] << "\n";
+//         std::cout << "find_point->val[1]: " << find_point->val[1] << "\n";
+//         std::cout << "find_point->val[2]: " << find_point->val[2] << "\n";
+
         if (find_point->val[0] >= 0 && find_point->val[0] < nx && find_point->val[1] >= 0 && find_point->val[1] < ny &&
           find_point->val[2] >= 0 && find_point->val[2] < nz) {
+          passed_if = true;
 
-          std::cout << "Entrou\n";
           if (lambda[a] > lambda_max) {
             lambda_max = lambda[a];
             pn[0] = find_point->val[0];
@@ -555,10 +565,16 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::a
         }
       } // for a
 
-      float dda = Dda3d(img, p1, pn);
-      img_out(static_cast<int>(dda), i, j);
+      if (passed_if) {
+        float dda = Dda3d(img, p1, pn);
+        img_out(static_cast<int>(dda), i, j);
+        passed_if = false;
+      }
+
     }
   }
+
+  return img_out;
 }
 
 float Dda3d(ImgVol& img, std::array<float,3> p1, std::array<float,3> pn) {
@@ -834,6 +850,47 @@ ImgVol Interp(ImgVol& img_vol, float sx, float sy, float sz) {
   ImgVol img_out(img);
 
   return img_out;
+}
+
+std::array<size_t, 2> MinMax(const ImgVol& img_vol) {
+  size_t min = std::numeric_limits<size_t>::max();
+  size_t max = std::numeric_limits<size_t>::min();
+
+  for (size_t x = 0; x < img_vol.SizeX(); x++) {
+      for (size_t y = 0; y < img_vol.SizeY(); y++) {
+        for (size_t z = 0; z < img_vol.SizeZ(); z++) {
+          float b = img_vol(x, y, z);
+          if (b > max) {
+            max = size_t(b);
+          }
+
+          if (b < min) {
+            min = size_t(b);
+          }
+        }
+      }
+    }
+
+  std::array<size_t, 2> arr = {min, max};
+  return arr;
+}
+
+void NormalizeImage(ImgVol& img_vol) {
+  int i_max = img_vol.Img()->Imax;
+  i_max = std::pow(2, i_max - 1);
+  std::cout << "i_max: " << i_max << "\n";
+  if (i_max > 255) {
+    std::array<size_t, 2> arr = MinMax(img_vol);
+    std::cout << "Normalizou\n";
+    for (size_t x = 0; x < img_vol.SizeX(); x++) {
+      for (size_t y = 0; y < img_vol.SizeY(); y++) {
+        for (size_t z = 0; z < img_vol.SizeZ(); z++) {
+          float b = 255*img_vol(x, y, z)/arr[1];
+          img_vol.SetVoxelIntensity(b, x, y, z);
+        }
+      }
+    }
+  }
 }
 
 }

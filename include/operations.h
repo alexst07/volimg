@@ -32,4 +32,6 @@ ImgVol ReformataImg(ImgVol& img, size_t n, std::array<float,3> p1, std::array<fl
 ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::array<float, 3> vet_normal);
 
 float Dda3d(ImgVol& img, std::array<float,3> p1, std::array<float,3> pn);
+
+void NormalizeImage(ImgVol& img_vol);
 }

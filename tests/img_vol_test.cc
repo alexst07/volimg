@@ -4,13 +4,13 @@
 #include "img2d.h"
 
 int main(int argc, char **argv) {
-  imgvol::ImgVol img("/home/alex/Downloads/libmc920/data/skull.scn");
+  imgvol::ImgVol img("/home/alex/Downloads/libmc920/data/brain.scn");
 //   imgvol::ImgVol img_label("/home/alex/Downloads/libmc920/data/brain_label.scn");
   std::cout << img << "\n";
   std::array<float,3> p1 = {50,50,0};
   std::array<float,3> pn = {50,50,100};
 
-  imgvol::ImgGray img_gray = imgvol::MaxIntensionProjection(img, M_PI/180*45, M_PI/180*45, std::array<float, 3>{0,0,1});
+  imgvol::ImgGray img_gray = imgvol::MaxIntensionProjection(img, M_PI/180*30, M_PI/180*30, std::array<float, 3>{0,0,1});
   img_gray.WriteImg("mip");
 
 //   imgvol::ImgVol img_vol = imgvol::ReformataImg(img, 100, p1, pn);
