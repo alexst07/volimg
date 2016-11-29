@@ -11,8 +11,10 @@
 
 namespace imgvol {
 
-Img2D Cut(const ImgVol& img_vol, ImgVol::Axis axis, size_t pos) {
+Img2D Cut(const ImgVol& img_vol, ImgVol::Axis axis, size_t pos, bool w) {
   size_t s1, s2;
+
+  std::cout << "cut w: " << w << "\n";
 
   if (axis == ImgVol::Axis::aZ) {
     s1 = img_vol.SizeX();
@@ -30,11 +32,11 @@ Img2D Cut(const ImgVol& img_vol, ImgVol::Axis axis, size_t pos) {
   for (int i = 0; i < s1; i++) {
     for (int j = 0; j < s2; j++) {
       if (axis == ImgVol::Axis::aZ) {
-        img2d(img_vol(i, j, pos), i, j);
+        img2d(img_vol((w? (s1 - i -1): i), j, pos), i, j);
       } else if (axis == ImgVol::Axis::aX) {
-        img2d(img_vol(pos, j, i), i, j);
+        img2d(img_vol(pos, j, (w? (s1 - i -1): i)), i, j);
       } else {
-        img2d(img_vol(j, pos, i), i, j);
+        img2d(img_vol(j, pos, (w? (s1 - i - 1): i)), i, j);
       }
     }
   }
@@ -137,10 +139,14 @@ ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits) {
   std::uniform_int_distribution<int> distribution(0,int(h));
   ImgColor img_color(img_cut.SizeX(), img_cut.SizeY());
   std::array<int, 3> cor;
+  std::array<int, 3> cinza;
+
+  float y, cg, co;
+  float maxH = MinMax(img_cut)[1];
 
   for (int i = 0; i < img_lb.NumPixels(); i++) {
     if (img_lb[i] == 0) {
-      cor[0] = cor[1] = cor[2] = img_cut[i];
+      cor[0] = cor[1] = cor[2] = (int)(255*img_cut[i]/maxH);
       img_color(cor, i);
       continue;
     }
@@ -152,22 +158,55 @@ ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits) {
         tab_color.insert(std::pair<int, int>(p, distribution(generator)));
 
       int m = tab_color[p];
-
       float v = m/h;
 //       std::cout << "v: " << v << "  ";
       v = 4*v +1;
-      cor[0] = h*std::max(float(0), (3- abs(v-4) - abs(v - 5))/2);
-      cor[1] = h*std::max(float(0), (4- abs(v-2) - abs(v - 4))/2);
-      cor[2] = h*std::max(float(0), (3- abs(v-1) - abs(v - 2))/2);
+      cor[0] = h*std::max(float(0), float((3- abs(v-4) - abs(v - 5))/2));
+      cor[1] = h*std::max(float(0), float((4- abs(v-2) - abs(v - 4))/2));
+      cor[2] = h*std::max(float(0), float((3- abs(v-1) - abs(v - 2))/2));
+
+      cinza[0] = img_cut[i] * 0.3;
+      cinza[1] = img_cut[i] * 0.3;
+      cinza[2] = img_cut[i] * 0.3;
+
+
+      //printf("R=%d, G=%d, B=%d\n", cor[0], cor[1], cor[2]);
+      y = img_cut[i];
+      cg = -0.25 * cor[0] + 0.5 * cor[1] - 0.25 * cor[2] + 0.5 + h/2;
+      co = 0.5 * cor[0] - 0.5 * cor[2] + 0.5 + h/2;
+
+      //printf("Y=%f, Cg=%f, Co=%f\n", y, cg, co);
+
+      cor[0] = (int)(255*(y - cg + co)/h) + 255;
+      cor[1] = (int)(255*(y + cg - h/2)/h) + 255;
+      cor[2] = (int)(255*(y - cg - co + h)/h) + 255;
+
+      //printf("R=%d, G=%d, B=%d\n", cor[0], cor[1], cor[2]);
+
+      cor[0] = cor[0] * 0.7;
+      cor[1] = cor[1] * 0.7;
+      cor[2] = cor[2] * 0.7;
+
+      cor[0] = cinza[0] + cor[0];
+      cor[1] = cinza[1] + cor[1];
+      cor[2] = cinza[2] + cor[2];
+
+//       printf("R=%d, G=%d, B=%d\n", cor[0], cor[1], cor[2]);
+
+      cor[0] = 255*cor[0]/(255*2);
+      cor[1] = 255*cor[1]/(255*2);
+      cor[2] = 255*cor[2]/(255*2);
+
+//       printf("R=%d, G=%d, B=%d\n", cor[0], cor[1], cor[2]);
       img_color(cor, i);
     } else {
-      cor[0] = cor[1] = cor[2] = img_cut[i];
+      cor[0] = cor[1] = cor[2] = (int)(255*img_cut[i]/maxH);
       img_color(cor, i);
     }
   }
-
   return img_color;
 }
+
 
 void PrintMatrix(Matrix *m) {
   for (int i = 0; i < m->nrows; i++) {

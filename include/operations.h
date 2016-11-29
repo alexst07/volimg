@@ -5,7 +5,7 @@
 
 namespace imgvol {
 
-Img2D Cut(const ImgVol& img_vol, ImgVol::Axis axis, size_t pos);
+Img2D Cut(const ImgVol& img_vol, ImgVol::Axis axis, size_t pos, bool w = false);
 
 void BrightinessContrast(Img2D& img, size_t num_bits, float b, float c);
 
