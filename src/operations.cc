@@ -14,8 +14,6 @@ namespace imgvol {
 Img2D Cut(const ImgVol& img_vol, ImgVol::Axis axis, size_t pos, bool w) {
   size_t s1, s2;
 
-  std::cout << "cut w: " << w << "\n";
-
   if (axis == ImgVol::Axis::aZ) {
     s1 = img_vol.SizeX();
     s2 = img_vol.SizeY();
@@ -101,7 +99,6 @@ void Negative(Img2D& img) {
 }
 
 void BrightinessContrast(Img2D& img, size_t num_bits, float b, float c) {
-//   size_t h = pow(2, num_bits) - 1;
   float h = MinMax(img)[1];
 
   b = 100 -b;
@@ -115,9 +112,6 @@ void BrightinessContrast(Img2D& img, size_t num_bits, float b, float c) {
 
   float i1 = (2*b_real - c_real)/2;
   float i2 = (c_real + 2*b_real)/2;
-//   float i2 = i1;
-
-//   std::cout << "i1: " << i1 << " i2: " << i2 << "\n";
 
   for (size_t i = 0; i < img.NumPixels(); i++) {
     if (img[i] < i1)
@@ -159,7 +153,7 @@ ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits) {
 
       int m = tab_color[p];
       float v = m/h;
-//       std::cout << "v: " << v << "  ";
+
       v = 4*v +1;
       cor[0] = h*std::max(float(0), float((3- abs(v-4) - abs(v - 5))/2));
       cor[1] = h*std::max(float(0), float((4- abs(v-2) - abs(v - 4))/2));
@@ -169,19 +163,13 @@ ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits) {
       cinza[1] = img_cut[i] * 0.3;
       cinza[2] = img_cut[i] * 0.3;
 
-
-      //printf("R=%d, G=%d, B=%d\n", cor[0], cor[1], cor[2]);
       y = img_cut[i];
       cg = -0.25 * cor[0] + 0.5 * cor[1] - 0.25 * cor[2] + 0.5 + h/2;
       co = 0.5 * cor[0] - 0.5 * cor[2] + 0.5 + h/2;
 
-      //printf("Y=%f, Cg=%f, Co=%f\n", y, cg, co);
-
       cor[0] = (int)(255*(y - cg + co)/h) + 255;
       cor[1] = (int)(255*(y + cg - h/2)/h) + 255;
       cor[2] = (int)(255*(y - cg - co + h)/h) + 255;
-
-      //printf("R=%d, G=%d, B=%d\n", cor[0], cor[1], cor[2]);
 
       cor[0] = cor[0] * 0.7;
       cor[1] = cor[1] * 0.7;
@@ -191,13 +179,10 @@ ImgColor ColorLabels(const Img2D& img_cut, const Img2D& img_lb, size_t nbits) {
       cor[1] = cinza[1] + cor[1];
       cor[2] = cinza[2] + cor[2];
 
-//       printf("R=%d, G=%d, B=%d\n", cor[0], cor[1], cor[2]);
-
       cor[0] = 255*cor[0]/(255*2);
       cor[1] = 255*cor[1]/(255*2);
       cor[2] = 255*cor[2]/(255*2);
 
-//       printf("R=%d, G=%d, B=%d\n", cor[0], cor[1], cor[2]);
       img_color(cor, i);
     } else {
       cor[0] = cor[1] = cor[2] = (int)(255*img_cut[i]/maxH);
@@ -249,14 +234,7 @@ ImgGray CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> v
       alpha_y = M_PI/2*Sign(vec[0]);
       alpha_x = 0;
     }
-
-//     if ((vec[0] != 0) && (vec[1] != 0)) {
-//       alpha_y
-//     }
   }
-
-//   std::cout << "alpha_x: " << alpha_x << "\n";
-//   std::cout << "alpha_y: " << alpha_y << "\n";
 
   Matrix *t_mqc = CreateMatrix(4, 4);
   t_mqc->val[0] = 1;
@@ -338,8 +316,6 @@ ImgGray CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> v
   ImgGray img_out(diagonal, diagonal);
   Matrix *q = CreateMatrix(1, 4);
 
-  PrintMatrix(phi_inv);
-
   for (int u = 0; u < (int) diagonal; u++) {
     for (int v = 0; v < (int) diagonal; v++) {
       q->val[0] = u;
@@ -350,8 +326,6 @@ ImgGray CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> v
       Matrix *p = MultMatrices(phi_inv, q);
       int intensity;
 
-//      PrintMatrix(p);
-
       if (p->val[0] < 0 || p->val[1] < 0 || p->val[2] < 0) {
         intensity = 0;
       } else  if (p->val[0] >= img.SizeX() || p->val[1] >= img.SizeY() || p->val[2] >= img.SizeZ()) {
@@ -359,7 +333,6 @@ ImgGray CortePlanar(ImgVol& img, std::array<float, 3> p1, std::array<float, 3> v
       } else {
         Point point{p->val[0], p->val[1], p->val[2]};
         intensity = ImageValueAtPoint(img.Img(), point);
-//         PrintMatrix(p);
       }
 
       img_out(intensity, u, v);
@@ -398,8 +371,6 @@ ImgVol ReformataImg(ImgVol& img, size_t n, std::array<float,3> p1, std::array<fl
   float diagonal = Diagonal(std::array<float, 3>{img.SizeX(), img.SizeY(), img.SizeZ()});
 
   ImgVol img_vol(diagonal, diagonal, n);
-//   std::cout << "Lambda: " << lambda << "\n";
-//   std::cout << "vec: " << vec[0] << ", " << vec[1] << ", " << vec[2] << "\n";
 
   std::array<float, 3> p = p1;
   for (size_t i = 0; i < n; i++) {
@@ -408,8 +379,7 @@ ImgVol ReformataImg(ImgVol& img, size_t n, std::array<float,3> p1, std::array<fl
     p[1] = p[1] + v_inc[1];
     p[2] = p[2] + v_inc[2];
     ImgGray img_gray = CortePlanar(img, p, vec);
-//     std::string name = "imgs/img_";
-//     img_gray.WriteImg(name + std::to_string(i));
+
     FillImg(img_gray, i, &img_vol);
   }
 
@@ -516,8 +486,6 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::a
   Matrix *phi_inv_norm = MultMatrices(rotx, tmp_rx_norm_mat);
   phi_inv_norm->val[3] = 0;
 
-  PrintMatrix(phi_inv_norm);
-
   ImgGray img_out(diagonal, diagonal);
 
   float term_1, term_2, term_3, lambda[6], lambda_max, lambda_min;
@@ -545,8 +513,6 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::a
       Matrix *q_inv = MultMatrices(pc, tmp_ry_rx_pcl_q);
       q_inv->val[3] = 0;
 
-//       PrintMatrix(q_inv);
-
       bool passed_if = false;
 
       for (int a = 0; a < 6; a++) {
@@ -565,24 +531,12 @@ ImgGray MaxIntensionProjection(ImgVol& img, float delta_x, float delta_y, std::a
           term_3 += nj[a][x]*phi_inv_norm->val[x];
         }
 
-//         std::cout << "termo 1: " << term_1 << "\n";
-//         std::cout << "termo 2: " << term_2 << "\n";
-//         std::cout << "termo 3: " << term_3 << "\n";
-
         lambda[a] = (term_1-term_2)/term_3;
-
-//         std::cout << "Lambda[" << a << "]: " << lambda[a] << "\n";
 
         find_point->val[0] = std::round(q_inv->val[0] + lambda[a]*phi_inv_norm->val[0]);
         find_point->val[1] = std::round(q_inv->val[1] + lambda[a]*phi_inv_norm->val[1]);
         find_point->val[2] = std::round(q_inv->val[2] + lambda[a]*phi_inv_norm->val[2]);
         find_point->val[3] = 1;
-
-//         std::cout << "lambda[a]: " << lambda[a] << "\n";
-
-//         std::cout << "find_point->val[0]: " << find_point->val[0] << "\n";
-//         std::cout << "find_point->val[1]: " << find_point->val[1] << "\n";
-//         std::cout << "find_point->val[2]: " << find_point->val[2] << "\n";
 
         if (find_point->val[0] >= 0 && find_point->val[0] < nx && find_point->val[1] >= 0 && find_point->val[1] < ny &&
           find_point->val[2] >= 0 && find_point->val[2] < nz) {
@@ -826,7 +780,6 @@ ImgGray DrawWireframe(const ImgVol& img_vol, std::array<float, 3> rad) {
 
   float diagonal = Diagonal(size);
 
-  // Conferir o -diagonal/2
   std::array<float, 3> dist_diagonal = {diagonal/2, diagonal/2, -diagonal/2};
 
   ImgGray res_img(diagonal, diagonal);
@@ -834,10 +787,6 @@ ImgGray DrawWireframe(const ImgVol& img_vol, std::array<float, 3> rad) {
   std::vector<std::array<float, 3>> vertex = VertexWireframe(img_vol, rad);
 
   std::array<bool, 6> faces = VisibleFaces(rad);
-
-  for (auto f: faces) {
-//     std::cout << "faces: " << f << "\n";
-  }
 
   if (faces[5]) {
     DrawLine(vertex[0], vertex[1], res_img);
@@ -917,10 +866,10 @@ std::array<size_t, 2> MinMax(const ImgVol& img_vol) {
 void NormalizeImage(ImgVol& img_vol) {
   int i_max = img_vol.Img()->Imax;
   i_max = std::pow(2, i_max - 1);
-  std::cout << "i_max: " << i_max << "\n";
+
   if (i_max > 255) {
     std::array<size_t, 2> arr = MinMax(img_vol);
-    std::cout << "Normalizou\n";
+
     for (size_t x = 0; x < img_vol.SizeX(); x++) {
       for (size_t y = 0; y < img_vol.SizeY(); y++) {
         for (size_t z = 0; z < img_vol.SizeZ(); z++) {
